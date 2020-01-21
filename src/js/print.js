@@ -11,14 +11,15 @@ const Print = {
 
     // Wait for iframe to load all content
     iframeElement.onload = () => {
-      if (params.type === 'pdf' || params.type === 'file') {
-        performPrint(iframeElement, params)
-        return
-      }
-
       // Get iframe element document
       let printDocument = (iframeElement.contentWindow || iframeElement.contentDocument)
       if (printDocument.document) printDocument = printDocument.document
+
+      if (params.type === 'pdf' || params.type === 'file') {
+        printDocument.title = params.documentTitle;
+        performPrint(iframeElement, params)
+        return
+      }
 
       // Append printable element to the iframe body
       printDocument.body.appendChild(params.printableElement)
