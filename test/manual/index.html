@@ -5,6 +5,35 @@
       printJS('/test/manual/test.pdf')
     }
 
+    function printFileHtml() {
+      printJS({
+        printable: '/test/manual/index.html',
+        type: 'file',
+        mime: 'text/html',
+      })
+    }
+
+    function printFileText() {
+      printJS({
+        printable: '/test/manual/iso_8859-1.txt',
+        type: 'file',
+        mime: 'text/plain',
+      })
+    }
+
+    function printFileTextBase64() {
+      fetch('/test/manual/iso_8859-1-base64.txt').then(function (response) {
+        response.text().then(function (base64) {
+          printJS({
+            printable: base64,
+            type: 'file',
+            base64: true,
+            mime: 'text/plain',
+          });
+        });
+      });
+    }
+
     function printPdfWithModal() {
       printJS({
         printable: '/test/manual/test.pdf',
@@ -12,7 +41,7 @@
         showModal: true
       })
     }
-    
+
     function printPdfWithModalAndCloseCallback() {
       printJS({
         printable: '/test/manual/test.pdf',
@@ -238,6 +267,17 @@
         </button>
         <button onClick='printPdfBase64();'>
           Print base64 PDF
+        </button>
+      </p>
+      <p>
+        <button onClick='printFileHtml();'>
+          Print file (HTML)
+        </button>
+        <button onClick='printFileText();'>
+          Print file (text)
+        </button>
+        <button onClick='printFileTextBase64();'>
+          Print base64 file (text)
         </button>
       </p>
       <p>

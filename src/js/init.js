@@ -2,13 +2,13 @@
 
 import Browser from './browser'
 import Modal from './modal'
-import Pdf from './pdf'
 import Html from './html'
+import File from './file'
 import RawHtml from './raw-html'
 import Image from './image'
 import Json from './json'
 
-const printTypes = ['pdf', 'html', 'image', 'json', 'raw-html']
+const printTypes = ['pdf', 'html', 'image', 'json', 'raw-html', 'file']
 
 export default {
   init () {
@@ -45,7 +45,8 @@ export default {
       css: null,
       style: null,
       scanStyles: true,
-      base64: false
+      base64: false,
+      mime: null
     }
 
     // Check if a printable document or object was supplied
@@ -59,17 +60,19 @@ export default {
         params.fallbackPrintable = params.printable
         params.type = arguments[1] || params.type
         break
-      case 'object':
+      case 'object': {
+        const mimeType = params.mime || 'application/pdf'
         params.printable = args.printable
         params.base64 = typeof args.base64 !== 'undefined'
         params.fallbackPrintable = typeof args.fallbackPrintable !== 'undefined' ? args.fallbackPrintable : params.printable
-        params.fallbackPrintable = params.base64 ? `data:application/pdf;base64,${params.fallbackPrintable}` : params.fallbackPrintable
-        for (var k in params) {
+        params.fallbackPrintable = params.base64 ? `data:${mimeType};base64,${params.fallbackPrintable}` : params.fallbackPrintable
+        for (let k in params) {
           if (k === 'printable' || k === 'fallbackPrintable' || k === 'base64') continue
 
           params[k] = typeof args[k] !== 'undefined' ? args[k] : params[k]
         }
         break
+      }
       default:
         throw new Error('Unexpected argument type! Expected "string" or "object", got ' + typeof args)
     }
@@ -106,7 +109,7 @@ export default {
     printFrame.setAttribute('id', params.frameId)
 
     // For non pdf printing, pass an html document string to srcdoc (force onload callback)
-    if (params.type !== 'pdf') {
+    if (params.type !== 'pdf' && params.type !== 'file') {
       printFrame.srcdoc = '<html><head><title>' + params.documentTitle + '</title>'
 
       // Attach css files
@@ -125,6 +128,9 @@ export default {
 
     // Check printable type
     switch (params.type) {
+      case 'file':
+        File.print(params, printFrame, 'text/plain')
+        break
       case 'pdf':
         // Check browser support for pdf and if not supported we will just open the pdf file instead
         if (Browser.isFirefox() || Browser.isEdge() || Browser.isIE()) {
@@ -143,7 +149,7 @@ export default {
             if (params.onLoadingEnd) params.onLoadingEnd()
           }
         } else {
-          Pdf.print(params, printFrame)
+          File.print(params, printFrame, 'application/pdf')
         }
         break
       case 'image':

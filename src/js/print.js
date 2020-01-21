@@ -11,7 +11,7 @@ const Print = {
 
     // Wait for iframe to load all content
     iframeElement.onload = () => {
-      if (params.type === 'pdf') {
+      if (params.type === 'pdf' || params.type === 'file') {
         performPrint(iframeElement, params)
         return
       }
@@ -34,7 +34,7 @@ const Print = {
       }
 
       // If printing images, wait for them to load inside the iframe
-      const images = printDocument.getElementsByTagName('img')
+      const images = Array.prototype.slice.call(printDocument.getElementsByTagName('img'))
 
       if (images.length > 0) {
         loadIframeImages(images).then(() => performPrint(iframeElement, params))

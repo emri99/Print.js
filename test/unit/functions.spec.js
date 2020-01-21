@@ -1,4 +1,4 @@
-import { addWrapper, capitalizePrint, isRawHTML } from '../../src/js/functions'
+import { addWrapper, capitalizePrint, getAbsoluteUrl, isRawHTML } from '../../src/js/functions'
 
 describe('addWrapper()', () => {
   it('add a div wrapper to a raw html', () => {
@@ -27,5 +27,17 @@ describe('isRawHTML()', () => {
 
   it('`<h1>HTML syntax error` return `false`', () => {
     expect(isRawHTML('<h1>HTML syntax error')).toBe(false)
+  })
+})
+
+describe('getAbsoluteUrl()', () => {
+  it('absolute url should be returned unchanged', () => {
+    expect(getAbsoluteUrl('http://google.com')).toBe('http://google.com')
+    expect(getAbsoluteUrl('blob://FUNKY_DATAS')).toBe('blob://FUNKY_DATAS')
+  })
+
+  it('relative url should be prefixed with current host', () => {
+    expect(getAbsoluteUrl('/awesome/url')).toBe('http://localhost:9876/awesome/url')
+    expect(getAbsoluteUrl('awesome/url/without/leading/slash')).toBe('http://localhost:9876/awesome/url/without/leading/slash')
   })
 })

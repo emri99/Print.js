@@ -1,3 +1,4 @@
+import Print from './print'
 import Modal from './modal'
 import Browser from './browser'
 
@@ -94,4 +95,54 @@ export function cleanUp (params) {
 export function isRawHTML (raw) {
   let regexHtml = new RegExp('<([A-Za-z][A-Za-z0-9]*)\\b[^>]*>(.*?)</\\1>')
   return regexHtml.test(raw)
+}
+
+export function getAbsoluteUrl (printable) {
+  return /^(blob|http)/i.test(printable)
+    ? printable
+    : window.location.origin + (printable.charAt(0) !== '/' ? '/' + printable : printable)
+}
+
+export function createBlobAndPrint (params, printFrame, data, mimeType) {
+  // Pass response or base64 data to a blob and create a local object url
+  let localFile = new window.Blob([data], { type: mimeType })
+  localFile = window.URL.createObjectURL(localFile)
+
+  // Set iframe src with file document url
+  printFrame.setAttribute('src', localFile)
+
+  Print.send(params, printFrame)
+}
+
+export function printFile (url, mimeType, params, printFrame) {
+  loadFile(params.printable)
+    .then((req) => {
+      createBlobAndPrint(params, printFrame, req.response, mimeType)
+    })
+    .catch((err) => {
+      cleanUp(params)
+      params.onError(err)
+    })
+}
+
+export function loadFile (url) {
+  return new Promise(function (resolve, reject) {
+    let req = new window.XMLHttpRequest()
+    req.responseType = 'arraybuffer'
+
+    req.addEventListener('load', () => {
+      // Check for errors
+      if ([200, 201].indexOf(req.status) === -1) {
+        const err = new Error('Unable to load file for printing')
+        err.req = req
+        reject(err)
+        return
+      }
+
+      resolve(req)
+    })
+
+    req.open('GET', url, true)
+    req.send()
+  })
 }
